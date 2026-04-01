@@ -1,9 +1,9 @@
-name: dogether_local_mysql
+name: dogether_mysql_lab
 
 services:
   mysql:
     image: mysql:8.0
-    container_name: dogether-mysql
+    container_name: dogether-mysql-lab
     ports:
       - "33306:3306"
     volumes:
