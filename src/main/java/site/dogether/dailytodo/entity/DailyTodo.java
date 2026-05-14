@@ -24,7 +24,6 @@ import site.dogether.dailytodo.exception.NotCertifyPendingDailyTodoException;
 import site.dogether.dailytodo.exception.NotCreatedTodayDailyTodoException;
 import site.dogether.dailytodo.exception.NotDailyTodoWriterException;
 import site.dogether.dailytodocertification.entity.DailyTodoCertification;
-import site.dogether.dailytodohistory.entity.DailyTodoHistory;
 import site.dogether.member.entity.Member;
 import site.dogether.memberactivity.entity.DailyTodoStats;
 
@@ -65,10 +64,6 @@ public class DailyTodo extends BaseEntity {
 
     @Column(name = "written_at", nullable = false, updatable = false)
     private LocalDateTime writtenAt;
-
-    @ToString.Exclude
-    @OneToOne(mappedBy = "dailyTodo", cascade = CascadeType.REMOVE)
-    private DailyTodoHistory dailyTodoHistory;
 
     @ToString.Exclude
     @OneToOne(mappedBy = "dailyTodo", cascade = CascadeType.REMOVE)

@@ -15,6 +15,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import site.dogether.common.audit.entity.BaseEntity;
 import site.dogether.dailytodo.entity.DailyTodo;
 
@@ -33,6 +35,7 @@ public class DailyTodoHistory extends BaseEntity {
     private Long id;
 
     @JoinColumn(name = "daily_todo_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToOne(fetch = FetchType.LAZY)
     private DailyTodo dailyTodo;
 

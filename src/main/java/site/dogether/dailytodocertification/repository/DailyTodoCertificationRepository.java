@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import site.dogether.challengegroup.entity.ChallengeGroup;
+import site.dogether.challengegroup.entity.ChallengeGroupStatus;
 import site.dogether.dailytodo.entity.DailyTodo;
 import site.dogether.dailytodocertification.entity.DailyTodoCertification;
 import site.dogether.dailytodocertification.entity.DailyTodoCertificationReviewStatus;
@@ -39,12 +40,12 @@ public interface DailyTodoCertificationRepository extends JpaRepository<DailyTod
     @Query("""
     SELECT dtc
     FROM DailyTodoCertification dtc
-    JOIN DailyTodoCertificationReviewer reviewer ON dtc = reviewer.dailyTodoCertification
-    JOIN dtc.dailyTodo dt
-    JOIN dt.challengeGroup cg
+    JOIN FETCH dtc.dailyTodo dt
+    JOIN FETCH dt.challengeGroup cg
+    JOIN FETCH dtc.dailyTodoCertificationReviewer dtcr
     WHERE
-        reviewer.reviewer = :reviewer AND
-        dtc.reviewStatus = 'REVIEW_PENDING' AND
+        dtcr.reviewer = :reviewer AND
+        dtcr.reviewStatus = 'REVIEW_PENDING' AND
         cg.status IN ('RUNNING', 'D_DAY')
     """)
     List<DailyTodoCertification> findAllCertificationsToReview(@Param("reviewer") Member reviewer);

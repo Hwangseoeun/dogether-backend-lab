@@ -199,6 +199,7 @@ async function generateTestData() {
                         id: currentTodoCertificationId,
                         daily_todo_certification_id: currentTodoCertificationId,
                         reviewer_id: reviewerId,
+                        review_status: reviewStatus,
                         row_inserted_at: todayDate,
                         row_updated_at: null
                     });

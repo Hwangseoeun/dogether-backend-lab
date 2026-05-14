@@ -200,6 +200,7 @@ export async function insertDailyTodoCertificationReviewer(connection, insertDat
             id,
             daily_todo_certification_id,
             reviewer_id,
+            review_status,
             row_inserted_at,
             row_updated_at                
         ) VALUES ?
