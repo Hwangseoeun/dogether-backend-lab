@@ -143,10 +143,12 @@ public class DailyTodoCertification extends BaseEntity {
         }
     }
 
-    public void review(final DailyTodoCertificationReviewStatus reviewResult, final String reviewFeedback) {
+    public void review(final DailyTodoCertificationReviewer dailyTodoCertificationReviewer, final DailyTodoCertificationReviewStatus reviewResult, final String reviewFeedback) {
         validateReviewStatus(reviewStatus);
         validateReviewFeedback(reviewResult, reviewFeedback);
         validateDailyTodoCertificationNotReviewed();
+
+        dailyTodoCertificationReviewer.syncReviewStatus(reviewResult);
 
         this.reviewStatus = reviewResult;
         this.reviewFeedback = reviewFeedback;

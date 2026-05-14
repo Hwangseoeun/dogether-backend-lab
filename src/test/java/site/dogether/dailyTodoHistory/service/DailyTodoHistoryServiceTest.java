@@ -13,7 +13,9 @@ import site.dogether.dailytodo.entity.DailyTodos;
 import site.dogether.dailytodo.repository.DailyTodoRepository;
 import site.dogether.dailytodocertification.entity.DailyTodoCertification;
 import site.dogether.dailytodocertification.entity.DailyTodoCertificationReviewStatus;
+import site.dogether.dailytodocertification.entity.DailyTodoCertificationReviewer;
 import site.dogether.dailytodocertification.repository.DailyTodoCertificationRepository;
+import site.dogether.dailytodocertification.repository.DailyTodoCertificationReviewerRepository;
 import site.dogether.dailytodohistory.entity.DailyTodoHistory;
 import site.dogether.dailytodohistory.repository.DailyTodoHistoryRepository;
 import site.dogether.dailytodohistory.service.DailyTodoHistoryService;
@@ -39,6 +41,7 @@ public class DailyTodoHistoryServiceTest {
     @Autowired private DailyTodoRepository dailyTodoRepository;
     @Autowired private DailyTodoHistoryRepository dailyTodoHistoryRepository;
     @Autowired private DailyTodoCertificationRepository dailyTodoCertificationRepository;
+    @Autowired private DailyTodoCertificationReviewerRepository dailyTodoCertificationReviewerRepository;
     @Autowired private DailyTodoStatsRepository dailyTodoStatsRepository;
     @Autowired private DailyTodoHistoryService dailyTodoHistoryService;
 
@@ -108,7 +111,10 @@ public class DailyTodoHistoryServiceTest {
                 dailyTodoStats
         ));
 
-        dailyTodoCertification.review(DailyTodoCertificationReviewStatus.APPROVE, "맛있는 치킨은 인정합니다..");
+        final Member reviewer = memberRepository.save(createMember("인증 검사자"));
+
+        final DailyTodoCertificationReviewer dailyTodoCertificationReviewer = dailyTodoCertificationReviewerRepository.save(new DailyTodoCertificationReviewer(dailyTodoCertification, reviewer));
+        dailyTodoCertification.review(dailyTodoCertificationReviewer, DailyTodoCertificationReviewStatus.APPROVE, "맛있는 치킨은 인정합니다..");
 
         // When
         FindTargetMemberTodayTodoHistoriesDto targetMemberTodayTodoHistories = dailyTodoHistoryService.findAllTodayTodoHistories(
