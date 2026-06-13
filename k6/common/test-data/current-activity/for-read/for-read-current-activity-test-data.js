@@ -176,6 +176,7 @@ async function generateTestData() {
                         currentTodoCertificationId,
                         currentTodoCertificationId,
                         reviewerId,
+                        reviewStatus,
                         todayDate,
                         null
                     ]);

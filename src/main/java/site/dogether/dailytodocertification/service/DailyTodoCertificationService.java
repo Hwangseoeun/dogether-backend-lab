@@ -14,6 +14,7 @@ import site.dogether.dailytodocertification.entity.DailyTodoCertification;
 import site.dogether.dailytodocertification.entity.DailyTodoCertificationReviewStatus;
 import site.dogether.dailytodocertification.entity.DailyTodoCertificationReviewer;
 import site.dogether.dailytodocertification.exception.DailyTodoCertificationNotFoundException;
+import site.dogether.dailytodocertification.exception.DailyTodoCertificationReviewerNotFoundException;
 import site.dogether.dailytodocertification.exception.NotDailyTodoCertificationReviewerException;
 import site.dogether.dailytodocertification.repository.DailyTodoCertificationRepository;
 import site.dogether.dailytodocertification.repository.DailyTodoCertificationReviewerRepository;
@@ -134,12 +135,13 @@ public class DailyTodoCertificationService {
     ) {
         final Member reviewer = getMember(reviewerId);
         final DailyTodoCertification dailyTodoCertification = getDailyTodoCertification(dailyTodoCertificationId);
+        final DailyTodoCertificationReviewer dailyTodoCertificationReviewer = getDailyTodoCertificationReviewer(dailyTodoCertification);
         final DailyTodoStats dailyTodoStats = getDailyTodoStats(dailyTodoCertification.getDailyTodoWriter());
         final DailyTodoCertificationReviewStatus reviewResult = DailyTodoCertificationReviewStatus.convertReviewResultStatusByValue(reviewResultValue);
 
         validateReviewer(dailyTodoCertification, reviewer);
 
-        dailyTodoCertification.review(reviewResult, reviewFeedback);
+        dailyTodoCertification.review(dailyTodoCertificationReviewer, reviewResult, reviewFeedback);
         dailyTodoStats.moveCertificatedToResult(reviewResult);
         dailyTodoHistoryService.updateDailyTodoHistory(dailyTodoCertification.getDailyTodo());
 
@@ -149,6 +151,11 @@ public class DailyTodoCertificationService {
     private DailyTodoCertification getDailyTodoCertification(final Long dailyTodoCertificationId) {
         return dailyTodoCertificationRepository.findById(dailyTodoCertificationId)
             .orElseThrow(() -> new DailyTodoCertificationNotFoundException(String.format("존재하지 않는 데일리 투두 인증 id입니다. (%d)", dailyTodoCertificationId)));
+    }
+
+    private DailyTodoCertificationReviewer getDailyTodoCertificationReviewer(final DailyTodoCertification dailyTodoCertification) {
+        return dailyTodoCertificationReviewerRepository.findByDailyTodoCertification(dailyTodoCertification)
+            .orElseThrow(() -> new DailyTodoCertificationReviewerNotFoundException(String.format("검사자가 존재하지 않는 데일리 투두 인증입니다. (%d)")));
     }
 
     private void validateReviewer(final DailyTodoCertification dailyTodoCertification, final Member reviewer) {

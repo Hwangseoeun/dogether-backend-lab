@@ -1,10 +1,14 @@
 package site.dogether.dailytodocertification.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
@@ -21,7 +25,11 @@ import site.dogether.member.entity.Member;
 @ToString
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "daily_todo_certification_reviewer")
+@Table(
+    name = "daily_todo_certification_reviewer",
+    indexes = {
+        @Index(name = "idx_review_status", columnList = "reviewer_id, review_status")
+    })
 @Entity
 public class DailyTodoCertificationReviewer extends BaseEntity {
 
@@ -32,6 +40,10 @@ public class DailyTodoCertificationReviewer extends BaseEntity {
     @JoinColumn(name = "daily_todo_certification_id",  nullable = false, updatable = false)
     @OneToOne(fetch = FetchType.LAZY)
     private DailyTodoCertification dailyTodoCertification;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "review_status", length = 20, nullable = false)
+    private DailyTodoCertificationReviewStatus reviewStatus;
 
     @JoinColumn(name = "reviewer_id", nullable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
@@ -51,6 +63,7 @@ public class DailyTodoCertificationReviewer extends BaseEntity {
 
         this.id = id;
         this.dailyTodoCertification = dailyTodoCertification;
+        this.reviewStatus = DailyTodoCertificationReviewStatus.REVIEW_PENDING;
         this.reviewer = reviewer;
     }
 
@@ -65,6 +78,10 @@ public class DailyTodoCertificationReviewer extends BaseEntity {
         if (dailyTodo.isWriter(reviewer)) {
             throw new InvalidDailyTodoCertificationReviewerException(String.format("데일리 투두 인증 검사자로 투두 작성자 본인을 지정할 수 없습니다. (%s) (%s)", dailyTodoCertification, reviewer));
         }
+    }
+
+    public void syncReviewStatus(final DailyTodoCertificationReviewStatus newStatus) {
+        this.reviewStatus = newStatus;
     }
 
     public Long getReviewerId() {

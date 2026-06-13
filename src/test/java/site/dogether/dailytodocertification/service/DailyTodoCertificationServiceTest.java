@@ -14,8 +14,10 @@ import site.dogether.dailytodo.entity.DailyTodoStatus;
 import site.dogether.dailytodo.repository.DailyTodoRepository;
 import site.dogether.dailytodocertification.entity.DailyTodoCertification;
 import site.dogether.dailytodocertification.entity.DailyTodoCertificationReviewStatus;
+import site.dogether.dailytodocertification.entity.DailyTodoCertificationReviewer;
 import site.dogether.dailytodocertification.exception.DailyTodoCertificationNotFoundException;
 import site.dogether.dailytodocertification.repository.DailyTodoCertificationRepository;
+import site.dogether.dailytodocertification.repository.DailyTodoCertificationReviewerRepository;
 import site.dogether.dailytodohistory.entity.DailyTodoHistory;
 import site.dogether.dailytodohistory.repository.DailyTodoHistoryRepository;
 import site.dogether.member.entity.Member;
@@ -24,12 +26,14 @@ import site.dogether.member.repository.MemberRepository;
 import site.dogether.memberactivity.entity.DailyTodoStats;
 import site.dogether.memberactivity.repository.DailyTodoStatsRepository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static site.dogether.dailytodo.entity.DailyTodoStatus.CERTIFY_COMPLETED;
+import static site.dogether.dailytodocertification.entity.DailyTodoCertificationReviewStatus.APPROVE;
+import static site.dogether.dailytodocertification.entity.DailyTodoCertificationReviewStatus.REJECT;
 import static site.dogether.dailytodocertification.entity.DailyTodoCertificationReviewStatus.REVIEW_PENDING;
 
 @Transactional
@@ -40,6 +44,7 @@ class DailyTodoCertificationServiceTest {
     @Autowired private MemberRepository memberRepository;
     @Autowired private DailyTodoRepository dailyTodoRepository;
     @Autowired private DailyTodoCertificationRepository dailyTodoCertificationRepository;
+    @Autowired private DailyTodoCertificationReviewerRepository dailyTodoCertificationReviewerRepository;
     @Autowired private DailyTodoStatsRepository dailyTodoStatsRepository;
     @Autowired private DailyTodoHistoryRepository dailyTodoHistoryRepository;
     @Autowired private DailyTodoCertificationService dailyTodoCertificationService;
@@ -152,6 +157,36 @@ class DailyTodoCertificationServiceTest {
             reviewResult,
             reviewFeedback))
             .doesNotThrowAnyException();
+    }
+
+    @Disabled
+    @DisplayName("투두 인증 검사를 수행하면 각 테이블(DailyTodoCertification, DailyTodoCertificationReviewer)에 검사 결과를 반영한다.")
+    @Test
+    void reviewStatusChangeIsSuccessAfterDailyTodoCertification() {
+        // Given
+        final ChallengeGroup challengeGroup = challengeGroupRepository.save(ChallengeGroupFixture.create("성욱이와 친구들"));
+        final Member writer = memberRepository.save(createMember("투두 작성자"));
+        final DailyTodo dailyTodo = dailyTodoRepository.save(createDailyTodo(challengeGroup, writer, CERTIFY_COMPLETED, LocalDateTime.now()));
+        final Member reviewer = memberRepository.save(createMember("인증 검사자"));
+        final DailyTodoCertification dailyTodoCertification = dailyTodoCertificationRepository.save(createDailyTodoCertification(dailyTodo, REVIEW_PENDING, null));
+        final DailyTodoCertificationReviewer dailyTodoCertificationReviewer = dailyTodoCertificationReviewerRepository.save(new DailyTodoCertificationReviewer(dailyTodoCertification, reviewer));
+        dailyTodoStatsRepository.save(createDailyTodoStats(writer));
+        dailyTodoHistoryRepository.save(createDailyTodoHistory(dailyTodo));
+
+        final Long reviewerId = reviewer.getId();
+        final Long dailyTodoCertificationId = dailyTodoCertification.getId();
+        final String reviewResult = "approve";
+        final String reviewFeedback = "우왕!";
+
+        dailyTodoCertificationService.reviewDailyTodoCertification(
+            reviewerId,
+            dailyTodoCertificationId,
+            reviewResult,
+            reviewFeedback
+        );
+
+        // When & Then
+        assertThat(dailyTodoCertificationReviewer.getReviewStatus()).isEqualTo(APPROVE);
     }
 
     @DisplayName("존재하지 않는 투두 인증 검사자 id로 인증 검사 요청을 하면 예외가 발생한다.")
